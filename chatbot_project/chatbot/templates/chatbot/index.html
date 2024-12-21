@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AgriBot</title>
+    <link rel="stylesheet" href="{% static 'chatbot/style.css' %}" />
+    <style>
+       /* Body background */
+      /* body {
+         background-color: #022c22;
+         font-family: Arial, sans-serif;
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         height: 100vh;
+         margin: 0;
+       }*/
+       body {
+             background-image: url("{% static 'chatbot\back2' %}"); /* Adjust the image path */
+             background-size: cover;
+             background-position: center;
+             font-family: Arial, sans-serif;
+             margin: 0;
+             display: flex;
+             justify-content: center;
+             align-items: center;
+             height: 100vh;
+         }
+
+       /* Chat container */
+       .chat-container {
+         background-color:#171717;
+         width: 80%;
+         max-width: 400px;
+         border-radius: 8px;
+         padding: 20px;
+         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+         display: flex;
+         flex-direction: column;
+
+
+
+       }
+
+       /* Header */
+       h2 {
+         font-size: 1.5rem;
+         color:#34d399;
+         text-align: center;
+         margin-bottom: 10px;
+         font-weight: 600;
+       }
+
+       /* Chat box */
+       .chat-box {
+         background-color: #064e3b;
+         padding: 10px;
+         height: 300px;
+         overflow-y: auto;
+         border: 1px solid: black;
+         border-radius: 5px;
+         margin-bottom: 10px;
+       }
+
+       /* Message styling */
+       .You,
+       .Bot {
+         padding: 8px 12px;
+         border-radius: 5px;
+         margin: 5px 0;
+         max-width: 80%;
+         word-wrap: break-word;
+       }
+
+       /* User message */
+       .You {
+         background-color:#34d399;
+         color: #fff;
+         align-self: flex-end;
+         text-align: right;
+       }
+
+       /* Bot message */
+       .Bot {
+         background-color: #e0e0e0;
+         color: #333;
+         align-self: flex-start;
+       }
+
+       /* Input field */
+       #user-input {
+         padding: 8px;
+         border-radius: 4px;
+         border: 1px solid #ccc;
+         width: 100%;
+         box-sizing: border-box;
+         margin-bottom: 10px;
+       }
+
+       /* Send button */
+       button {
+         background-color:#34d399;
+         color: #fff;
+         border: none;
+         padding: 8px 16px;
+         border-radius: 4px;
+         cursor: pointer;
+         width: 100%;
+         font-weight: bold;
+       }
+
+       /* Send button hover effect */
+       button:hover {
+         background-color:#064e3b;;
+       }
+    </style>
+  </head>
+  <body>
+    {% csrf_token %}
+    <div class="chat-container">
+      <h2>Welcome to AgriBot Assistant</h2>
+      <p
+        style="
+          color: #34d399;
+          text-align: center;
+          font-size: 1rem;
+          margin-bottom: 15px;
+        "
+      >
+        Please ask something in Hindi, Punjabi, or English (कृपया हिंदी, पंजाबी
+        या अंग्रेजी में कुछ पूछें)
+      </p>
+      <div class="chat-box" id="chat-box"></div>
+      <input type="text" id="user-input" placeholder="Ask something..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+      async function sendMessage() {
+        const userInput = document.getElementById("user-input");
+        const query = userInput.value.trim();
+
+        if (query) {
+          appendMessage("You", query);
+          userInput.value = "";
+
+          const response = await fetch("{% url 'get_response' %}", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify({ query }),
+          });
+
+          const data = await response.json();
+          appendMessage("Bot", data.response);
+        }
+      }
+
+      function appendMessage(sender, message) {
+        const chatBox = document.getElementById("chat-box");
+        const messageElement = document.createElement("div");
+        messageElement.className = sender;
+        messageElement.textContent = `${sender}: ${message}`;
+        chatBox.appendChild(messageElement);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+    </script>
+  </body>
+</html>
